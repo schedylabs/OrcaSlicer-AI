@@ -1,6 +1,8 @@
 Build
 Build.bat
 /build*/
+.claude/
+.claude-project-memory/
 CMakeLists.txt.user
 **/CMakeLists.txt.autosave
 deps/build*

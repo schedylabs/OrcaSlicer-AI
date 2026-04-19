@@ -1148,6 +1148,8 @@ PRINT_CONFIG_CLASS_DEFINE(
     ((ConfigOptionBool,                 wipe_before_external_loop))
     ((ConfigOptionEnum<WallInfillOrder>, wall_infill_order))
     ((ConfigOptionBool,                 precise_outer_wall))
+    ((ConfigOptionBool,                 smooth_finish))
+    ((ConfigOptionBool,                 anti_ghost))
     ((ConfigOptionPercent,              bridge_density))
     ((ConfigOptionFloat,                 filter_out_gap_fill))
     ((ConfigOptionFloatOrPercent,       small_perimeter_speed))

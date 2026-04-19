@@ -2282,7 +2282,11 @@ void TabPrint::build()
     load_initial_data();
 
     auto page = add_options_page(L("Quality"), "custom-gcode_quality"); // ORCA: icon only visible on placeholders
-        auto optgroup = page->new_optgroup(L("Layer height"), L"param_layer_height");
+        auto optgroup = page->new_optgroup(L("Smart quality"), L"param_quality");
+        optgroup->append_single_option_line("smooth_finish");
+        optgroup->append_single_option_line("anti_ghost");
+
+        optgroup = page->new_optgroup(L("Layer height"), L"param_layer_height");
         optgroup->append_single_option_line("layer_height","quality_settings_layer_height");
         optgroup->append_single_option_line("initial_layer_print_height","quality_settings_layer_height");
 

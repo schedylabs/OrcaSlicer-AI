@@ -1,3 +1,45 @@
+# OrcaSlicer-AI — Fork
+
+> **Versão aprimorada do OrcaSlicer com I.A. integrada.**
+> Fork mantido por **José Tiago** com toggles inteligentes de qualidade que aplicam,
+> com um único clique, conjuntos de ajustes otimizados em vez de exigir que o usuário
+> configure dezenas de parâmetros manualmente.
+
+## Recursos exclusivos deste fork
+
+Ambos aparecem na aba **Quality → Smart quality**.
+
+### ✔ Smooth finish
+Esconde as linhas de impressão no topo da peça combinando ironing rápido com pequenos
+ajustes na parede externa. Impacto de tempo mínimo (~5–8%).
+
+Quando marcado, aplica automaticamente:
+
+| Parâmetro              | Valor                       |
+| ---------------------- | --------------------------- |
+| `ironing_type`         | `top` (só superfícies topo) |
+| `ironing_speed`        | 80 mm/s                     |
+| `ironing_spacing`      | 0.2 mm                      |
+| `ironing_flow`         | 8 %                         |
+| `precise_outer_wall`   | ligado                      |
+| `seam_position`        | `aligned`                   |
+| `outer_wall_speed`     | valor atual ÷ 1.3           |
+
+### ✔ Anti-ghost corners
+Reduz artefatos de ressonância (fantasmas / ringing) em paredes externas, pensado
+para printers com sensor de vibração (ADXL345, AD5X, etc.) — complementa o input
+shaping do firmware resolvendo as frequências baixas de mudança de direção que o
+shaping não cancela totalmente.
+
+Quando marcado, aplica automaticamente:
+
+| Parâmetro                  | Valor                |
+| -------------------------- | -------------------- |
+| `outer_wall_acceleration`  | valor atual ÷ 2      |
+| `outer_wall_jerk`          | valor atual ÷ 2      |
+
+---
+
 <div align="center">
 
 <picture>

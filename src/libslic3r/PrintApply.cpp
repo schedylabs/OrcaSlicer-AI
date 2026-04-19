@@ -1123,6 +1123,31 @@ Print::ApplyStatus Print::apply(const Model &model, DynamicPrintConfig new_full_
 
     //new_full_config.normalize_fdm(used_filaments);
     new_full_config.normalize_fdm_1();
+
+    // ORCA: smooth_finish — override a small set of options to hide layer lines
+    // (fast ironing on top + minor outer wall tweaks) without significantly increasing print time.
+    if (const ConfigOption *opt_smooth = new_full_config.option("smooth_finish"); opt_smooth && opt_smooth->getBool()) {
+        if (auto *o = new_full_config.option<ConfigOptionEnum<IroningType>>("ironing_type", true))  o->value = IroningType::TopSurfaces;
+        if (auto *o = new_full_config.option<ConfigOptionFloat>("ironing_speed",   true))           o->value = 80.0;
+        if (auto *o = new_full_config.option<ConfigOptionFloat>("ironing_spacing", true))           o->value = 0.2;
+        if (auto *o = new_full_config.option<ConfigOptionPercent>("ironing_flow",  true))           o->value = 8;
+        if (auto *o = new_full_config.option<ConfigOptionBool>("precise_outer_wall", true))         o->value = true;
+        if (auto *o = new_full_config.option<ConfigOptionEnum<SeamPosition>>("seam_position", true)) o->value = spAligned;
+        if (auto *o = new_full_config.option<ConfigOptionFloat>("outer_wall_speed")) {
+            if (o->value > 0.0) o->value = o->value / 1.3;
+        }
+    }
+
+    // ORCA: anti_ghost — reduce resonance ringing on outer walls by halving outer wall acceleration and jerk.
+    if (const ConfigOption *opt_anti_ghost = new_full_config.option("anti_ghost"); opt_anti_ghost && opt_anti_ghost->getBool()) {
+        if (auto *o = new_full_config.option<ConfigOptionFloat>("outer_wall_acceleration")) {
+            if (o->value > 0.0) o->value = o->value / 2.0;
+        }
+        if (auto *o = new_full_config.option<ConfigOptionFloat>("outer_wall_jerk")) {
+            if (o->value > 0.0) o->value = o->value / 2.0;
+        }
+    }
+
     t_config_option_keys changed_keys = new_full_config.normalize_fdm_2(objects().size(), used_filaments.size());
     if (changed_keys.size() > 0) {
         BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(", got changed_keys, size=%1%")%changed_keys.size();

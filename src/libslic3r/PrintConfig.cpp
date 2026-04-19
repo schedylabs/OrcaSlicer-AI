@@ -1357,6 +1357,22 @@ void PrintConfigDef::init_fff_params()
                        "will be ignored for outer-inner or inner-outer-inner wall sequences.");
     def->set_default_value(new ConfigOptionBool{true});
 
+    def = this->add("smooth_finish", coBool);
+    def->label = L("Smooth finish");
+    def->category = L("Quality");
+    def->tooltip  = L("Hide layer lines with a fast ironing pass on top surfaces and small tweaks to outer wall "
+                      "(top ironing, 80 mm/s ironing speed, 0.2 mm spacing, 8% flow, outer wall slowed 1.3x, "
+                      "precise wall on, aligned seam). Minimal time impact.");
+    def->set_default_value(new ConfigOptionBool{false});
+
+    def = this->add("anti_ghost", coBool);
+    def->label = L("Anti-ghost corners");
+    def->category = L("Quality");
+    def->tooltip  = L("Reduce resonance ringing (ghosting) on outer walls by halving outer wall acceleration "
+                      "and jerk. Complements printer-side input shaping (ADXL345) by addressing low-frequency "
+                      "direction changes that shaping cannot fully cancel.");
+    def->set_default_value(new ConfigOptionBool{false});
+
     def = this->add("only_one_wall_top", coBool);
     def->label = L("Only one wall on top surfaces");
     def->category = L("Quality");
