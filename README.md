@@ -7,7 +7,8 @@
 
 ## Recursos exclusivos deste fork
 
-Ambos aparecem na aba **Quality → Smart quality**.
+`Smooth finish` e `Anti-ghost corners` aparecem na aba **Quality → Smart quality**.
+`Enable ICF (FlashForge)` aparece na aba **Multimaterial → FlashForge ICF**.
 
 ### ✔ Smooth finish
 Esconde as linhas de impressão no topo da peça combinando ironing rápido com pequenos
@@ -37,6 +38,27 @@ Quando marcado, aplica automaticamente:
 | -------------------------- | -------------------- |
 | `outer_wall_acceleration`  | valor atual ÷ 2      |
 | `outer_wall_jerk`          | valor atual ÷ 2      |
+
+### ✔ Enable ICF (FlashForge)
+**Setting específico da FlashForge.** ICF (Independent Color Feeder) é o sistema
+de troca de cor/material de printers FlashForge como a AD5X. Não é suportado
+pelo OrcaSlicer upstream — só o FlashPrint suporta nativamente. Este fork
+adiciona o toggle na aba **Multimaterial → FlashForge ICF**.
+
+Quando marcado, expõe o placeholder `{use_icf}` para os templates customizados
+de G-code (`change_filament_gcode` / `machine_start_gcode`) no perfil do printer,
+permitindo emitir os comandos ICF específicos condicionalmente. Exemplo:
+
+```gcode
+{if use_icf}
+; comandos ICF da FlashForge aqui (M-codes exatos dependem do firmware)
+M620 S[next_extruder]A
+T[next_extruder]
+M622
+{endif}
+```
+
+Não ative em printers não-FlashForge.
 
 ---
 

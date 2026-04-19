@@ -6318,6 +6318,17 @@ void PrintConfigDef::init_fff_params()
     def->mode = comSimple;
     def->set_default_value(new ConfigOptionBool(false));
 
+    def = this->add("use_icf", coBool);
+    def->label = L("Enable ICF (FlashForge)");
+    def->tooltip = L("FlashForge-specific setting. Enables Independent Color Feeder mode for FlashForge printers "
+                     "such as the AD5X. ICF is a FlashForge feature that is not part of upstream OrcaSlicer "
+                     "(only FlashPrint supports it natively) — when enabled here, this toggle is exposed to "
+                     "custom machine G-code templates (change_filament_gcode / machine_start_gcode) as the "
+                     "placeholder {use_icf}, so you can emit the ICF-specific tool-change commands. "
+                     "Leave off for non-FlashForge printers.");
+    def->mode = comSimple;
+    def->set_default_value(new ConfigOptionBool(false));
+
     def = this->add("prime_tower_enable_framework", coBool);
     def->label = L("Internal ribs");
     def->tooltip = L("Enable internal ribs to increase the stability of the prime tower.");
