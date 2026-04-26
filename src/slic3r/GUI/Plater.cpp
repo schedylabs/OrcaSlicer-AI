@@ -158,6 +158,7 @@
 
 #include "PhysicalPrinterDialog.hpp"
 #include "PrintHostDialogs.hpp"
+#include "MakerWorldImportConverter.hpp"
 #include "PlateSettingsDialog.hpp"
 #include "DailyTips.hpp"
 #include "CreatePresetsDialog.hpp"
@@ -11987,6 +11988,12 @@ void Plater::load_project(wxString const& filename2,
 
     BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << __LINE__ << " load project done";
     m_loading_project = false;
+
+    // ORCA (fork): if the project came from another printer (typically a Bambu
+    // 3mf from MakerWorld), offer to convert it to AD5X so the user can print
+    // without manually re-picking presets.
+    if (!res.empty() && !load_restore)
+        CallAfter([this]() { GUI::maybe_convert_loaded_project_to_ad5x(this); });
 }
 
 // BBS: save logic
@@ -15924,10 +15931,15 @@ void Plater::send_gcode_legacy(int plate_idx, Export3mfProgressFn proFn, bool us
         auto        config        = get_app_config();
 
         std::unique_ptr<PrintHostSendDialog> pDlg;
+        const auto  model_id      = preset_bundle->printers.get_edited_preset().get_printer_type(preset_bundle);
         if (host_type == htElegooLink) {
             pDlg = std::make_unique<ElegooPrintHostSendDialog>(default_output_file, upload_job.printhost->get_post_upload_actions(), groups,
                                                                storage_paths, storage_names,
                                                                config->get_bool("open_device_tab_post_upload"));
+        } else if (boost::starts_with(model_id, "Flashforge-")) {
+            pDlg = std::make_unique<FlashforgePrintHostSendDialog>(default_output_file, upload_job.printhost->get_post_upload_actions(), groups,
+                                                                   storage_paths, storage_names,
+                                                                   config->get_bool("open_device_tab_post_upload"));
         } else {
             pDlg = std::make_unique<PrintHostSendDialog>(default_output_file, upload_job.printhost->get_post_upload_actions(), groups,
                                                          storage_paths, storage_names, config->get_bool("open_device_tab_post_upload"));

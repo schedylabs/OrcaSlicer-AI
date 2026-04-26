@@ -952,4 +952,108 @@ void ElegooPrintHostSendDialog::refresh()
     this->Fit();
 }
 
+// ORCA: FlashForge-specific send dialog. See header for rationale.
+FlashforgePrintHostSendDialog::FlashforgePrintHostSendDialog(const fs::path&            path,
+                                                             PrintHostPostUploadActions post_actions,
+                                                             const wxArrayString&       groups,
+                                                             const wxArrayString&       storage_paths,
+                                                             const wxArrayString&       storage_names,
+                                                             bool                       switch_to_device_tab)
+    : PrintHostSendDialog(path, post_actions, groups, storage_paths, storage_names, switch_to_device_tab)
+{
+    auto* preset_bundle = wxGetApp().preset_bundle;
+    if (preset_bundle) {
+        auto cfg = preset_bundle->full_config();
+        if (auto* opt = cfg.option<ConfigOptionBool>("use_icf"))
+            m_use_icf = opt->value;
+    }
+    m_initial_use_icf = m_use_icf;
+}
+
+void FlashforgePrintHostSendDialog::init()
+{
+    PrintHostSendDialog::init();
+
+    auto* preset_bundle = wxGetApp().preset_bundle;
+    if (!preset_bundle)
+        return;
+
+    content_sizer->AddSpacer(VERT_SPACING);
+
+    auto* header = new wxStaticText(this, wxID_ANY, _L("FlashForge options"));
+    header->SetFont(::Label::Head_14);
+    header->SetForegroundColour(StateColor::darkModeColorFor(wxColour("#323A3D")));
+    content_sizer->Add(header, 0, wxBOTTOM, FromDIP(4));
+
+    {
+        auto* icf_sizer = new wxBoxSizer(wxHORIZONTAL);
+        auto* checkbox  = new ::CheckBox(this);
+        checkbox->SetValue(m_use_icf);
+        checkbox->Bind(wxEVT_TOGGLEBUTTON, [this](wxCommandEvent& e) {
+            m_use_icf = e.IsChecked();
+            if (m_reslice_warning)
+                m_reslice_warning->Show(m_use_icf != m_initial_use_icf);
+            this->Layout();
+            this->Fit();
+            e.Skip();
+        });
+        icf_sizer->Add(checkbox, 0, wxALL | wxALIGN_CENTER, FromDIP(2));
+
+        auto* icf_text = new wxStaticText(this, wxID_ANY, _L("Enable ICF (Independent Color Feeder)"));
+        icf_text->SetFont(::Label::Body_13);
+        icf_text->SetForegroundColour(StateColor::darkModeColorFor(wxColour("#323A3D")));
+        icf_sizer->Add(icf_text, 0, wxALL | wxALIGN_CENTER, FromDIP(2));
+        content_sizer->Add(icf_sizer);
+    }
+
+    m_reslice_warning = new wxStaticText(this, wxID_ANY,
+        _L("ICF state differs from the sliced G-code. Re-slice before uploading for the change to take effect."));
+    m_reslice_warning->Wrap(CONTENT_WIDTH * wxGetApp().em_unit());
+    m_reslice_warning->SetFont(::Label::Body_12);
+    m_reslice_warning->SetForegroundColour(wxColour("#D1884F"));
+    m_reslice_warning->Show(false);
+    content_sizer->Add(m_reslice_warning, 0, wxLEFT | wxBOTTOM, FromDIP(4));
+
+    content_sizer->AddSpacer(VERT_SPACING);
+
+    auto* filaments_header = new wxStaticText(this, wxID_ANY, _L("Filaments"));
+    filaments_header->SetFont(::Label::Head_14);
+    filaments_header->SetForegroundColour(StateColor::darkModeColorFor(wxColour("#323A3D")));
+    content_sizer->Add(filaments_header, 0, wxBOTTOM, FromDIP(4));
+
+    const auto& filament_names = preset_bundle->filament_presets;
+    std::vector<std::string> filament_colors;
+    if (auto* opt = preset_bundle->project_config.option<ConfigOptionStrings>("filament_colour"))
+        filament_colors = opt->values;
+
+    for (size_t i = 0; i < filament_names.size(); ++i) {
+        auto* row = new wxBoxSizer(wxHORIZONTAL);
+
+        wxColour swatch = (i < filament_colors.size()) ? wxColour(filament_colors[i]) : wxColour("#CCCCCC");
+        auto*    color_box = new wxPanel(this, wxID_ANY, wxDefaultPosition, FromDIP(wxSize(14, 14)));
+        color_box->SetBackgroundColour(swatch);
+        row->Add(color_box, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, FromDIP(6));
+
+        auto* label = new wxStaticText(this, wxID_ANY, wxString::Format("%zu. %s", i + 1, from_u8(filament_names[i])));
+        label->SetFont(::Label::Body_13);
+        label->SetForegroundColour(StateColor::darkModeColorFor(wxColour("#323A3D")));
+        row->Add(label, 0, wxALIGN_CENTER_VERTICAL);
+
+        content_sizer->Add(row, 0, wxBOTTOM, FromDIP(2));
+    }
+
+    this->Layout();
+    this->Fit();
+    this->CenterOnParent();
+}
+
+void FlashforgePrintHostSendDialog::EndModal(int ret)
+{
+    if (ret == wxID_OK) {
+        AppConfig* app_config = wxGetApp().app_config;
+        app_config->set("recent", CONFIG_KEY_USE_ICF, std::to_string(m_use_icf ? 1 : 0));
+    }
+    PrintHostSendDialog::EndModal(ret);
+}
+
 }}

@@ -180,6 +180,35 @@ private:
     BedType m_BedType;
 };
 
+// ORCA: FlashForge-specific send dialog. Extends the base PrintHostSendDialog with
+// an ICF (Independent Color Feeder) toggle and a read-only list of the filaments
+// currently configured on the sidebar, so the user can review what will be sent
+// to AD5X-class printers before uploading.
+class FlashforgePrintHostSendDialog : public PrintHostSendDialog
+{
+public:
+    FlashforgePrintHostSendDialog(const boost::filesystem::path& path,
+                                  PrintHostPostUploadActions     post_actions,
+                                  const wxArrayString&           groups,
+                                  const wxArrayString&           storage_paths,
+                                  const wxArrayString&           storage_names,
+                                  bool                           switch_to_device_tab);
+
+    virtual void EndModal(int ret) override;
+    virtual void init() override;
+    virtual std::map<std::string, std::string> extendedInfo() const override
+    {
+        return {{"use_icf", std::to_string(m_use_icf ? 1 : 0)}};
+    }
+
+private:
+    const char* CONFIG_KEY_USE_ICF = "flashforge_use_icf";
+
+    bool          m_use_icf { false };
+    bool          m_initial_use_icf { false };
+    wxStaticText* m_reslice_warning { nullptr };
+};
+
 wxDECLARE_EVENT(EVT_PRINTHOST_PROGRESS, PrintHostQueueDialog::Event);
 wxDECLARE_EVENT(EVT_PRINTHOST_ERROR, PrintHostQueueDialog::Event);
 wxDECLARE_EVENT(EVT_PRINTHOST_CANCEL, PrintHostQueueDialog::Event);

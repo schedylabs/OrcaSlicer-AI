@@ -2282,7 +2282,7 @@ void TabPrint::build()
     load_initial_data();
 
     auto page = add_options_page(L("Quality"), "custom-gcode_quality"); // ORCA: icon only visible on placeholders
-        auto optgroup = page->new_optgroup(L("Smart quality"), L"param_quality");
+        auto optgroup = page->new_optgroup(L("Smart quality"), L"param_advanced");
         optgroup->append_single_option_line("smooth_finish");
         optgroup->append_single_option_line("anti_ghost");
 
